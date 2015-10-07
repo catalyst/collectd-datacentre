@@ -1,4 +1,19 @@
 #!/usr/bin/env python
+#
+# Copyright (c) 2015 Catalyst.net Ltd
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
 
 """
 collectd-python plugin to read the temperatures from an owfs directory.
@@ -26,7 +41,7 @@ def log_warning(message):
     collectd.warning('%s: %s' % (PLUGIN, message))
 
 def process_bus(bus):
-    """Given a path to an owfs bus, read all temperature sensors and submit them to collectd."""        
+    """Given a path to an owfs bus, read all temperature sensors and submit them to collectd."""
 
     sensors = [sensor for sensor in os.listdir('%s/%s' % (OWFS_PATH, bus)) if 'fasttemp' in os.listdir('%s/%s/%s' % (OWFS_PATH, bus, sensor))]
 
@@ -35,7 +50,7 @@ def process_bus(bus):
         try:
             sensor_value = float(read_file('%s/fasttemp' % sensor_path))
             val = collectd.Values(plugin=PLUGIN)
-            val.type = 'temperature' 
+            val.type = 'temperature'
             val.plugin_instance = sensor
             val.values = [sensor_value]
             val.dispatch(interval=INTERVAL)
@@ -53,7 +68,7 @@ def collectd_configure(configuration):
 
 def collectd_init():
     discovered_busses = [bus for bus in os.listdir(OWFS_PATH) if bus.startswith('bus.')]
-    
+
     for bus in discovered_busses:
         collectd.register_read(process_bus, data=bus, interval=INTERVAL, name='python.%s.%s' % (process_bus.__module__, bus))
         log_info("registered %s" % bus)
